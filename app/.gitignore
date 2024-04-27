@@ -1,1 +1,3 @@
 /build
+api_key.properties
+/app/src/main/assets/api_key.properties
