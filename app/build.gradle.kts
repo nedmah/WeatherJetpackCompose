@@ -89,6 +89,11 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
+    //Glance
+    implementation("androidx.glance:glance-appwidget:1.0.0")
+    implementation("androidx.glance:glance:1.0.0")
+    implementation("androidx.glance:glance-material3:1.0.0")
+
     implementation("io.coil-kt:coil-compose:1.4.0")
 
     testImplementation("junit:junit:4.13.2")

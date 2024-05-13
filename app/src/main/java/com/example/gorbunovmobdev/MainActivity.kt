@@ -62,6 +62,7 @@ import kotlinx.coroutines.withContext
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -89,6 +90,11 @@ fun SignIn(){
     val scope = rememberCoroutineScope()
     var loggedIn by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
+
+    if (sharedPreferences.getBoolean("loggedIn", false)) context.startActivity(GreetingsActivity::class.java)
+
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -138,8 +144,10 @@ fun SignIn(){
 
                 scope.launch(Dispatchers.IO) {
                     loggedIn = userViewModel.login(email, password)
+
                     if (loggedIn) {
-                        context.startActivity()
+                        sharedPreferences.edit().putBoolean("loggedIn", true).apply()
+                        context.startActivity(GreetingsActivity::class.java)
                     } else{
                         scope.launch(Dispatchers.Main) {
                             Toast.makeText(
@@ -172,6 +180,7 @@ fun SignUp(){
     var password_confirm by remember { mutableStateOf("") }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -324,7 +333,7 @@ fun page(){
 }
 
 
-fun Context.startActivity() {
-    val intent = Intent(this, GreetingsActivity::class.java)
+fun Context.startActivity(activityClass: Class<*>) {
+    val intent = Intent(this, activityClass)
     startActivity(intent)
 }

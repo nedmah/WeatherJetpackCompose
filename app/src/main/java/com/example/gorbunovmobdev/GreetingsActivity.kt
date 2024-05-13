@@ -86,6 +86,8 @@ fun Greeting() {
     var city by remember { mutableStateOf("") }
     var weatherData by remember { mutableStateOf<WeatherResponse?>(null) }
     val context = LocalContext.current
+    val weatherFetching = WeatherFetching()
+    val sharedPreferences = context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
 
     val updateWeatherData: (WeatherResponse?) -> Unit = { response ->
         weatherData = response
@@ -140,7 +142,7 @@ fun Greeting() {
                     location.getCurrentLocation()
                     val lat = location.latitude
                     val long = location.longitude
-                    fetchWeatherDataByLocation(lat,long,context,updateWeatherData)
+                    weatherFetching.fetchWeatherDataByLocation(lat,long,context,updateWeatherData)
 
                 },
                 modifier = Modifier
@@ -154,13 +156,13 @@ fun Greeting() {
         Button(
             onClick = {
 
-                if (city.isNotEmpty()) fetchWeatherData(city,context, updateWeatherData)
+                if (city.isNotEmpty()) weatherFetching.fetchWeatherData(city,context, updateWeatherData)
                 else{
                     val location = LocationProvider(context)
                     location.getCurrentLocation()
                     val lat = location.latitude
                     val long = location.longitude
-                    fetchWeatherDataByLocation(lat,long,context,updateWeatherData)
+                    weatherFetching.fetchWeatherDataByLocation(lat,long,context,updateWeatherData)
                 }
 
 
@@ -199,73 +201,18 @@ fun Greeting() {
         }
 
 
-
-
-
-    }
-}
-
-
-private fun fetchWeatherData(city: String, context: Context, callback: (WeatherResponse?) -> Unit) {
-    val service = WeatherApiService.create()
-    val apiKey = openProperties(context)
-
-
-
-    CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.getWeatherByCityName(city, apiKey)
-                withContext(Dispatchers.Main) {
-                    callback(response)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        GreetingsActivity(),
-                        "Ошибка получения данных, попробуйте ввести другой город",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-
-    }
-}
-
-
-private fun fetchWeatherDataByLocation(lat: Double, long: Double, context: Context, callback: (WeatherResponse?) -> Unit) {
-    val service = WeatherApiService.create()
-    val apiKey = openProperties(context)
-
-
-
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val response = service.getWeatherByCoordinates(lat,long, apiKey)
-            withContext(Dispatchers.Main) {
-                callback(response)
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    context,
-                    "Ошибка получения данных, попробуйте ввести другой город",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+        Button(
+            onClick = {
+                sharedPreferences.edit().remove("loggedIn").apply()
+                context.startActivity(MainActivity::class.java)
+            },
+            modifier = Modifier
+        ) {
+            Text(text = "Выйти")
         }
 
+
     }
 }
 
-private fun openProperties(context: Context) : String{
-    val properties = Properties()
-    var apiKey = ""
-    try {
-        properties.load(context.assets.open("api_key.properties"))
-        apiKey = properties.getProperty("API_KEY")
-        // Use the API key to fetch weather data
-    } catch (e: IOException) {
-        // Handle the error
-    }
-    return apiKey
-}
+
